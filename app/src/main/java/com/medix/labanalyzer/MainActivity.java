@@ -1,5 +1,6 @@
-package com.example.medix; // تأكد من تغيير هذا لاسم الباكيج الخاص بمشروعك
+package com.medix.labanalyzer;
 
+import android.app.Activity;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.graphics.drawable.GradientDrawable;
@@ -8,7 +9,6 @@ import android.text.InputType;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
@@ -19,10 +19,7 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.cardview.widget.CardView;
-
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends Activity {
 
     // الألوان
     private final int COLOR_PRIMARY = Color.parseColor("#0D47A1");
@@ -38,7 +35,7 @@ public class MainActivity extends AppCompatActivity {
     // العناصر
     private Spinner spinnerTestType;
     private EditText etResult;
-    private CardView cardResult;
+    private LinearLayout cardResult;
     private TextView tvTestNameResult, tvValueResult, tvRangeResult, tvStatus;
     private LinearLayout layoutStatus;
     private ImageView ivStatusIcon;
@@ -53,9 +50,6 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        
-        // إخفاء شريط العنوان الافتراضي
-        if (getSupportActionBar() != null) getSupportActionBar().hide();
 
         // بناء الواجهة برمجياً
         ScrollView scrollView = new ScrollView(this);
@@ -69,7 +63,8 @@ public class MainActivity extends AppCompatActivity {
 
         // --- الهيدر (Header) ---
         ImageView logo = new ImageView(this);
-        logo.setImageResource(android.R.drawable.ic_menu_myplaces);
+        // استخدام أيقونة أساسية من النظام لتجنب أخطاء الموارد
+        logo.setImageResource(android.R.drawable.ic_menu_compass);
         logo.setColorFilter(COLOR_PRIMARY);
         LinearLayout.LayoutParams logoParams = new LinearLayout.LayoutParams(150, 150);
         logoParams.gravity = Gravity.CENTER_HORIZONTAL;
@@ -97,18 +92,14 @@ public class MainActivity extends AppCompatActivity {
         mainLayout.addView(subtitle);
 
         // --- بطاقة الإدخال (Input Card) ---
-        CardView inputCard = new CardView(this);
+        LinearLayout inputCard = new LinearLayout(this);
+        inputCard.setOrientation(LinearLayout.VERTICAL);
         LinearLayout.LayoutParams cardParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         cardParams.bottomMargin = 40;
         inputCard.setLayoutParams(cardParams);
-        inputCard.setRadius(30);
-        inputCard.setCardElevation(15);
-        inputCard.setCardBackgroundColor(COLOR_WHITE);
-
-        LinearLayout inputLayout = new LinearLayout(this);
-        inputLayout.setOrientation(LinearLayout.VERTICAL);
-        inputLayout.setPadding(40, 40, 40, 40);
-        inputCard.addView(inputLayout);
+        inputCard.setPadding(40, 40, 40, 40);
+        inputCard.setBackground(createRoundedBackground(COLOR_WHITE, 30, COLOR_WHITE));
+        inputCard.setElevation(15); // إضافة ظل برمجياً
         mainLayout.addView(inputCard);
 
         TextView inputTitle = new TextView(this);
@@ -117,13 +108,13 @@ public class MainActivity extends AppCompatActivity {
         inputTitle.setTypeface(null, Typeface.BOLD);
         inputTitle.setTextColor(COLOR_TEXT_DARK);
         inputTitle.setPadding(0, 0, 0, 30);
-        inputLayout.addView(inputTitle);
+        inputCard.addView(inputTitle);
 
         // Spinner
         TextView labelSpinner = new TextView(this);
         labelSpinner.setText("نوع التحليل:");
         labelSpinner.setTextColor(COLOR_TEXT_LIGHT);
-        inputLayout.addView(labelSpinner);
+        inputCard.addView(labelSpinner);
 
         spinnerTestType = new Spinner(this);
         ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, testNames);
@@ -132,13 +123,13 @@ public class MainActivity extends AppCompatActivity {
         spinnerParams.bottomMargin = 30;
         spinnerTestType.setLayoutParams(spinnerParams);
         spinnerTestType.setBackground(createRoundedBackground(Color.parseColor("#F0F2F5"), 20, Color.parseColor("#E0E0E0")));
-        inputLayout.addView(spinnerTestType);
+        inputCard.addView(spinnerTestType);
 
         // EditText
         TextView labelResult = new TextView(this);
         labelResult.setText("النتيجة:");
         labelResult.setTextColor(COLOR_TEXT_LIGHT);
-        inputLayout.addView(labelResult);
+        inputCard.addView(labelResult);
 
         etResult = new EditText(this);
         etResult.setHint("أدخل القيمة هنا...");
@@ -150,7 +141,7 @@ public class MainActivity extends AppCompatActivity {
         etResult.setLayoutParams(etParams);
         etResult.setPadding(30, 0, 30, 0);
         etResult.setBackground(createRoundedBackground(Color.parseColor("#F0F2F5"), 20, Color.parseColor("#E0E0E0")));
-        inputLayout.addView(etResult);
+        inputCard.addView(etResult);
 
         // Button
         Button btnAnalyze = new Button(this);
@@ -161,20 +152,16 @@ public class MainActivity extends AppCompatActivity {
         btnAnalyze.setBackground(createRoundedBackground(COLOR_PRIMARY, 20, COLOR_PRIMARY));
         LinearLayout.LayoutParams btnParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 140);
         btnAnalyze.setLayoutParams(btnParams);
-        inputLayout.addView(btnAnalyze);
+        inputCard.addView(btnAnalyze);
 
         // --- بطاقة النتيجة (Result Card) ---
-        cardResult = new CardView(this);
+        cardResult = new LinearLayout(this);
+        cardResult.setOrientation(LinearLayout.VERTICAL);
         cardResult.setLayoutParams(cardParams);
-        cardResult.setRadius(30);
-        cardResult.setCardElevation(15);
-        cardResult.setCardBackgroundColor(COLOR_WHITE);
+        cardResult.setPadding(40, 40, 40, 40);
+        cardResult.setBackground(createRoundedBackground(COLOR_WHITE, 30, COLOR_WHITE));
+        cardResult.setElevation(15);
         cardResult.setVisibility(View.GONE); // مخفية في البداية
-
-        LinearLayout resultLayout = new LinearLayout(this);
-        resultLayout.setOrientation(LinearLayout.VERTICAL);
-        resultLayout.setPadding(40, 40, 40, 40);
-        cardResult.addView(resultLayout);
         mainLayout.addView(cardResult);
 
         TextView resultTitle = new TextView(this);
@@ -183,12 +170,12 @@ public class MainActivity extends AppCompatActivity {
         resultTitle.setTypeface(null, Typeface.BOLD);
         resultTitle.setTextColor(COLOR_PRIMARY);
         resultTitle.setPadding(0, 0, 0, 30);
-        resultLayout.addView(resultTitle);
+        cardResult.addView(resultTitle);
 
         View divider = new View(this);
         divider.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 2));
         divider.setBackgroundColor(Color.parseColor("#EEEEEE"));
-        resultLayout.addView(divider);
+        cardResult.addView(divider);
 
         tvTestNameResult = createResultTextView();
         tvValueResult = createResultTextView();
@@ -196,9 +183,9 @@ public class MainActivity extends AppCompatActivity {
         tvRangeResult.setTextColor(COLOR_TEXT_LIGHT);
         tvRangeResult.setTextSize(14);
 
-        resultLayout.addView(tvTestNameResult);
-        resultLayout.addView(tvValueResult);
-        resultLayout.addView(tvRangeResult);
+        cardResult.addView(tvTestNameResult);
+        cardResult.addView(tvValueResult);
+        cardResult.addView(tvRangeResult);
 
         // Status Box
         layoutStatus = new LinearLayout(this);
@@ -223,7 +210,7 @@ public class MainActivity extends AppCompatActivity {
         tvStatus.setPadding(20, 0, 0, 0);
         layoutStatus.addView(tvStatus);
 
-        resultLayout.addView(layoutStatus);
+        cardResult.addView(layoutStatus);
 
         // Footer
         TextView footer = new TextView(this);
@@ -249,7 +236,7 @@ public class MainActivity extends AppCompatActivity {
         String inputStr = etResult.getText().toString().trim();
 
         if (inputStr.isEmpty()) {
-            Toast.makeText(this, "الرجاء إدخال النتيجة أولاً", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getApplicationContext(), "الرجاء إدخال النتيجة أولاً", Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -257,7 +244,7 @@ public class MainActivity extends AppCompatActivity {
         try {
             value = Double.parseDouble(inputStr);
         } catch (NumberFormatException e) {
-            Toast.makeText(this, "الرجاء إدخال رقم صحيح", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getApplicationContext(), "الرجاء إدخال رقم صحيح", Toast.LENGTH_SHORT).show();
             return;
         }
 
